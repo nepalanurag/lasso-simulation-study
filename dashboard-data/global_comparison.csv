@@ -1,0 +1,6 @@
+metric,lambda_min,lambda_1se
+Sensitivity,0.701,0.582
+False Positive Rate (FPR),0.068,0.02
+Precision,0.215,0.428
+Exact Recovery Rate,0.0,0.03
+Test MSE,1.858,2.015
