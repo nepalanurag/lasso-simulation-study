@@ -1,5 +1,5 @@
 ---
-title: "MINI PROJECT 4"
+title: "Lasso Simulation Study"
 output: pdf_document
 date: "`r Sys.Date()`"
 header-includes: \usepackage{amsmath}\usepackage{enumitem}\usepackage{amssymb}\usepackage{graphicx}\usepackage{fancyhdr}\usepackage{multicol}\usepackage{graphicx}\pagestyle{fancy}\fancyhf{}\fancyhead[L]{MATH 748}\fancyhead[C]{MINI PROJECT 4}\fancyhead[R]{Anurag Nepal}\fancyfoot[C]{\thepage}\usepackage{fvextra}\DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
@@ -12,6 +12,23 @@ library(dplyr)
 library(tidyr)
 library(foreach)
 library(doParallel)
+
+# Selection metrics for one fitted coefficient vector.
+# Compares the estimated support {j : beta_hat[j] != 0} against the true
+# support. Returns c(sensitivity, fpr, precision, exact_recovery, est_error).
+calculate_metrics <- function(beta_true, beta_hat) {
+  p <- length(beta_true)
+  true_support <- which(beta_true != 0)
+  est_support <- which(beta_hat != 0)
+  tp <- length(intersect(true_support, est_support))
+  fp <- length(setdiff(est_support, true_support))
+  sensitivity <- tp / length(true_support)
+  fpr <- fp / (p - length(true_support))
+  precision <- if (length(est_support) == 0) 0 else tp / length(est_support)
+  exact_recovery <- as.numeric(setequal(true_support, est_support))
+  est_error <- sqrt(sum((beta_hat - beta_true)^2))
+  c(sensitivity, fpr, precision, exact_recovery, est_error)
+}
 
 n_vals <- c(50, 100, 200)
 p_vals <- c(200, 400, 600)
@@ -97,7 +114,6 @@ write.csv(final_results, "lasso_simulation_results.csv", row.names = FALSE)
 
 ```{r}
 library(ggplot2)
-library(dplyr)
 library(tidyr)
 
 df <- read.csv("lasso_simulation_results.csv")
