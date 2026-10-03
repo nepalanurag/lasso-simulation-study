@@ -1,0 +1,34 @@
+{
+ "n": [
+  50,
+  100,
+  200
+ ],
+ "p": [
+  200,
+  400,
+  600
+ ],
+ "signal_strength_A": [
+  0.5,
+  1.0,
+  1.5
+ ],
+ "rho": [
+  0,
+  0.5,
+  0.8
+ ],
+ "replications_per_setting": 100,
+ "test_set_n": 500,
+ "true_signals": 5,
+ "true_coefficients": "first five = [A, -A, A, -A, A]",
+ "predictor_covariance": "AR(1) Toeplitz with correlation rho",
+ "noise": "Gaussian, sd 1",
+ "tuning_rules": [
+  "lambda.min",
+  "lambda.1se"
+ ],
+ "seeds": "748 + setting index",
+ "parallel": true
+}
