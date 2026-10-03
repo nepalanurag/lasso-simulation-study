@@ -1,11 +1,29 @@
 ---
 title: "Lasso Simulation Study"
-output: pdf_document
+author: "Anurag Nepal"
 date: "`r Sys.Date()`"
-header-includes: \usepackage{amsmath}\usepackage{enumitem}\usepackage{amssymb}\usepackage{graphicx}\usepackage{fancyhdr}\usepackage{multicol}\usepackage{graphicx}\pagestyle{fancy}\fancyhf{}\fancyhead[L]{MATH 748}\fancyhead[C]{MINI PROJECT 4}\fancyhead[R]{Anurag Nepal}\fancyfoot[C]{\thepage}\usepackage{fvextra}\DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
+output: pdf_document
 ---
 
-```{r}
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+# Background
+
+I wanted to know how well lasso actually recovers the true variables when the dimension grows. Theory says lasso can select correctly under the right conditions, but I wanted to see the trade-offs myself: how the choice between the minimum-lambda and 1se-lambda tuning rules plays out across sample sizes, dimensions, signal strengths, and predictor correlations.
+
+# Setup
+
+No real data here. I simulated it: 5 true signals out of p predictors, with AR(1) correlation structure between predictors, Gaussian noise, and a separate 500-row test set per replication. The full grid is sample size n in {50, 100, 200}, dimension p in {200, 400, 600}, signal strength A in {0.5, 1.0, 1.5}, and predictor correlation rho in {0, 0.5, 0.8}, with 100 replications per setting run in parallel. Each setting uses its own seed so the whole study is reproducible.
+
+# Method
+
+## The simulation
+
+For each setting I draw training and test data from a multivariate normal with Toeplitz covariance, set the first five coefficients to alternating +A/-A, and fit lasso via `cv.glmnet` with 10-fold CV. I record both the `lambda.min` and `lambda.1se` solutions. Each fit is scored on selection metrics, sensitivity, false positive rate, precision, exact recovery of the true support, and estimation error, plus test MSE on the held-out 500 rows. Results are averaged over the 100 replications and written to `lasso_simulation_results.csv`, which is in this repo.
+
+```{r simulation, results='hide'}
 library(glmnet)
 library(MASS)
 library(dplyr)
@@ -111,8 +129,11 @@ stopCluster(cl)
 write.csv(final_results, "lasso_simulation_results.csv", row.names = FALSE)
 ```
 
+## Plotting the patterns
 
-```{r}
+With the results CSV in hand, I averaged each metric over one factor at a time to isolate its effect: sensitivity against n, exact recovery against rho, precision against A, and false positive rate against both p and rho. The plots are saved as PNGs in this repo.
+
+```{r plots, results='hide'}
 library(ggplot2)
 library(tidyr)
 
@@ -232,6 +253,20 @@ p5 <- ggplot(avg_rho_fpr, aes(x = rho, y = FPR, color = Lambda, shape = Lambda))
 ggsave("avg_plot_rho_fpr.png", p5, width = 8, height = 6, dpi = 300)
 ```
 
+# Results
+
+The five saved plots show the headline patterns. Sensitivity climbs with sample size for both tuning rules. Exact recovery collapses as predictor correlation rises, which is the setting where lasso's selection guarantees break down. Precision improves with signal strength. And the false positive rate needs care in high dimensions: the rate can look artificially low simply because the denominator of noise variables keeps growing, so the metric choice matters as much as the tuning choice.
+
+```{r figures, echo=FALSE, fig.width=8, fig.height=6, out.width="90%"}
+knitr::include_graphics(c("avg_plot_n_sensitivity.png",
+                          "avg_plot_rho_recovery.png",
+                          "avg_plot_A_precision.png",
+                          "avg_plot_p_fpr.png",
+                          "avg_plot_rho_fpr.png"))
+```
+
+The global averages across every setting put the two tuning rules side by side:
+
 ```{r}
 library(knitr)
 comparison_table <- df %>%
@@ -262,4 +297,6 @@ comparison_table <- df %>%
 kable(comparison_table, caption = "Global Average Comparison: Lambda Min vs Lambda 1SE")
 ```
 
+# Takeaway
 
+Lasso recovers the true variables reliably when signals are strong and predictors are independent, but exact recovery breaks down under high correlation, and that is the realistic case for most applied data. The 1se rule buys stability at the cost of sensitivity, and in high dimensions the raw false positive rate flatters every method because the denominator keeps growing. The practical lesson is to pick the metric before picking the tuning rule.
