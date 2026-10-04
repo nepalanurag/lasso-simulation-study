@@ -6,14 +6,14 @@ analysis.
 
 ## Files
 
-- `simulation_settings.json` — the full simulation grid: sample sizes `n`,
+- `simulation_settings.json` - the full simulation grid: sample sizes `n`,
   dimensions `p`, signal strengths `A`, correlations `rho`, 100 replications per
   setting, 500-row test sets, AR(1) Toeplitz predictors, 5 true signals.
-- `global_comparison.csv` — global averages across all settings for the two
+- `global_comparison.csv` - global averages across all settings for the two
   tuning rules. Columns: `metric`, `lambda_min`, `lambda_1se`. Metrics:
   Sensitivity, False Positive Rate (FPR), Precision, Exact Recovery Rate,
   Test MSE.
-- `lasso_simulation_results.csv` — per-setting averaged results (108 settings x
+- `lasso_simulation_results.csv` - per-setting averaged results (81 settings x
   metrics for both tuning rules). Same file as the repo root copy, included here
   so the dashboard needs no other source. Columns: `n`, `p`, `A`, `rho`,
   `min_sensitivity`, `min_fpr`, `min_precision`, `min_exact_recovery`,

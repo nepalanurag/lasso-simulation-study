@@ -6,8 +6,11 @@ Here the same question goes to real data: the sklearn diabetes set
 
 For each tuning rule I bootstrap the data 200 times and record which
 predictors get selected, measuring selection stability directly.
+
+Outputs land in the repo: figures in ../docs/figs/, metrics in metrics.json.
 """
 import json
+from pathlib import Path
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -16,6 +19,11 @@ import matplotlib.pyplot as plt
 from sklearn.datasets import load_diabetes
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LassoCV, lasso_path
+
+HERE = Path(__file__).resolve().parent          # analysis/
+REPO = HERE.parent                              # repo root
+FIGS = REPO / "docs" / "figs"
+FIGS.mkdir(parents=True, exist_ok=True)
 
 SEED = 42
 rng = np.random.default_rng(SEED)
@@ -26,10 +34,6 @@ n, p = X.shape
 
 cv = LassoCV(cv=10, random_state=SEED, max_iter=10000).fit(X, y)
 a_min = cv.alpha_
-a_1se = cv.alpha_ + cv.alphas_[np.where(cv.mse_path_.mean(axis=1)
-                                        <= cv.mse_path_.mean(axis=1).min()
-                                        + cv.mse_path_.std(axis=1).min() / np.sqrt(10))[0]].max() \
-    if False else None
 # 1se rule: largest alpha whose mean CV MSE is within one SE of the minimum
 mse_mean = cv.mse_path_.mean(axis=1)
 mse_se = cv.mse_path_.std(axis=1) / np.sqrt(cv.mse_path_.shape[1])
@@ -73,7 +77,7 @@ ax.set_ylabel("coefficient")
 ax.set_title("Lasso coefficient paths (diabetes data, standardized)")
 ax.legend(fontsize=8, ncol=2)
 fig.tight_layout()
-fig.savefig("/home/hatch/workspace/expand-work/figs/lasso_paths.png", dpi=110)
+fig.savefig(FIGS / "lasso_paths.png", dpi=110)
 plt.close(fig)
 
 # Figure 2: bootstrap selection frequency per rule
@@ -88,9 +92,9 @@ ax.set_ylabel("fraction of 200 bootstraps selected")
 ax.set_title("Selection stability across 200 bootstraps: min vs 1se rule")
 ax.legend()
 fig.tight_layout()
-fig.savefig("/home/hatch/workspace/expand-work/figs/lasso_stability.png", dpi=110)
+fig.savefig(FIGS / "lasso_stability.png", dpi=110)
 plt.close(fig)
 
-with open("/home/hatch/workspace/expand-work/lasso_metrics.json", "w") as f:
+with open(HERE / "metrics.json", "w") as f:
     json.dump(out, f, indent=2)
 print(json.dumps({k: v for k, v in out.items() if k not in ("selection_freq_min", "selection_freq_1se")}, indent=2))
