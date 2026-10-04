@@ -13,6 +13,4 @@ I compared the minimum-lambda and 1se-lambda tuning rules on sensitivity, false 
 - `lasso_simulation_results.csv` - results across all settings
 - `avg_plot_*.png` - averaged performance plots
 
-## Follow-up: the 1se rule on real data
-
-I took the min-vs-1se question to the diabetes progression set (442 patients, 10 predictors, 200 bootstraps): [expansion analysis](https://nepalanurag.github.io/lasso-simulation-study/expansion.html). Lambda.min keeps 7 predictors, lambda.1se keeps 4 (bmi, bp, s3, s5), exactly the ones both rules select in over 94% of bootstraps. Same conservatism the simulation found, now on real data. Code in `analysis/`.
+I also took the min-vs-1se question to the diabetes progression set (442 patients, 10 predictors, 200 bootstraps), covered in the Results section of the walkthrough. Lambda.min keeps 7 predictors, lambda.1se keeps 4 (bmi, bp, s3, s5), exactly the ones both rules select in over 94% of bootstraps. Same conservatism the simulation found, now on real data. Code in `analysis/`.
